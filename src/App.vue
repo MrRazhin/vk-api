@@ -14,7 +14,6 @@
 
       
         <b-card-body style="height: 500px; position:relative; overflow-y:scroll;">
-          <div v-show="this.loadFriends">Загрузка списка друзей...</div>
           <draggable v-model="friends" group="a">
             <div 
               v-for="user in friends" :key="user.id"
@@ -79,57 +78,23 @@
 <script>
 import draggable from 'vuedraggable';
 import VK from 'vk-openapi';
-import jsonp from 'jsonp';
 
 VK.init({apiId:8135174});
 
 export default {
   components: { draggable },
 
-  data() {
-    return {
-      loadFriends: false,
-    }
-    
-  },
-
   methods: {
     
     login() {
-
-      this.loadFriends = true;
-
-      VK.Auth.login(function(response) {
-
-        jsonp(`https://api.vk.com/method/friends.get?count=60&fields=nickname,photo_50&access_token=${response.session.sid}&v=5.131`, function(err, data) {
-          if (err) {
-            console.log('Error ',err.message);
-          } else {
-            localStorage.setItem('users', JSON.stringify( data.response.items));
-          }
-        });
-        setTimeout(() => {
-          location.reload();
-          this.loadFriends = false;
-        }, 2000);
-
-      });
-
+      this.$store.dispatch('login');
     },
 
     saveSelected() {
 
-      if (this.selectFriends.length > 0) {
-        localStorage.setItem('selectFriends', JSON.stringify(this.selectFriends));
-        this.$store.dispatch('saveSelected');
-        console.log('Selected friends');
-        this.selectFriends.forEach(element => {
-          console.log(element.first_name, element.last_name)
-        });
-      } else {
-        console.log('Список пуст!')
-      }
-    }
+      this.$store.dispatch('saveSelected', this.selectFriends);
+      
+     }
 
   },
 
